@@ -52,6 +52,7 @@ found:
 | FAT         | No       | Yes        | Yes      |
 | TUNE        | No       | Yes        | Yes      |
 | WDATE       | No       | Yes        | Yes      |
+| HTALK       | No       | Yes        | Yes      |
 
 `\clearpage`{=latex}
 
@@ -164,6 +165,13 @@ device/unit/slice, unassign the existing drive letter first.
 Be aware that this command will allow you to reassign or remove the
 assignment of your system drive letter. This can cause your operating
 system to fail and force you to reboot.
+
+The `ASSIGN` command does **not** prevent you from assigning a drive
+letter to a slice that does not fit on the physical media.  However,
+any subsequent attempt to refer to that drive letter will result in
+an immediate OS error of "no disk".  Refer to "Hard Disk Capacity"
+in the $doc_user$ for a discussion of the exact number of slices that
+will fit on a specific physical disk size.
 
 This command is particularly sensitive to being matched to the
 appropriate version of the RomWBW ROM you are using. Be very careful
@@ -621,9 +629,9 @@ shown on your console.  The `TALK` application does this.
 `TALK` operates at the operating system level (not HBIOS).
 
 The parameter to `TALK` refers to logical CP/M serial devices.  Upon
-execution all characters types at the console will be sent to the
+execution all characters typed at the console will be sent to the
 device specified and all characters received by the specified device
-will be echoes on the console.
+will be echoed on the console.
 
 Press Control+Z on the console to terminate the application.
 
@@ -636,6 +644,36 @@ operating systems such as CP/M 3 is not supported.
 
 The `TALK` command is an original product and the source code is
 provided in the RomWBW distribution.
+
+`\clearpage`{=latex}
+
+# HTALK
+
+`HTALK` is a variation of the `TALK` utility, but it works directly
+against HBIOS Character Units.
+
+## Syntax
+
+`HTALK COMn:`
+
+## Usage
+
+`HTALK` operates at the HBIOS level.
+
+The parameter to `TALK` refers to a HBIOS character unit.  Upon
+execution all characters typed at the console will be sent to the
+device specified and all characters received by the specified device
+will be echoed on the console.
+
+Press Control+Z on the console to terminate the application.
+
+## Notes
+
+
+## Etymology
+
+The `TALK` command was created and donated to RomWBW by Tom Plano.  It
+is an original product designed specifically for RomWBW.
 
 `\clearpage`{=latex}
 

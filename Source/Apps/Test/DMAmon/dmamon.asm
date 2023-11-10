@@ -27,9 +27,9 @@ DMAIOTST	.EQU	$68		; AN OUTPUT PORT FOR TESTING - 16C450 SERIAL OUT
 ;
 #IF (DMAMODE==DMAMODE_DUO)
 DMABASE		.SET	$40		; DMA: DMA0 BASE ADDRESS
-;DMABASE 	.SET	$41		; DMA: DMA1 BASE ADDRESS
 DMALATCH	.SET	$43		; DMA: DMA LATCH ADDRESS
 DMAIOTST	.SET	$58		; AN OUTPUT PORT FOR TESTING - 16C450 SERIAL OUT
+;DMAIOTST	.SET	$94		; AN ALT OUTPUT PORT FOR TESTING - RTC/SPEAKER/LEDS PORT
 #ENDIF
 ;
 ;==================================================================================================
@@ -127,7 +127,7 @@ MAIN:
 	LD	SP,STACK		; STACK
 ;
 	call	PRTSTRD			; WELCOME
-	.db	"\n\rDMA Monitor V3\n\r$"
+	.db	"\n\rDMA Monitor V3.1\n\r$"
 ;
 #IF (INTENABLE)
 ;
@@ -136,6 +136,8 @@ MAIN:
 	ld	de,$A000
 	ld	bc,hsiz
 	ldir
+	ld	a,(dmaport)
+	ld	(int_dmaport),a
 ;
 	; Install interrupt vector (RomWBW specific!!!)
 	ld	hl,int		; pointer to my interrupt handler
@@ -215,6 +217,9 @@ DMACFG_S:
 	call	HEXIN
 	ld	hl,dmaport
 	ld	(hl),a
+#IF (INTENABLE)
+	ld	(int_dmaport),a
+#ENDIF
 	jp	MENULP
 ;
 DMACFG_L:
@@ -398,7 +403,8 @@ DMA_INIT:
 ;
 	ld	hl,DMACode		; program the
 	ld	b,DMACode_Len		; dma command
-	ld	c,DMABASE		; block
+	ld	a,(dmaport)
+	ld	c,a		; block
 ;
 	di
 	otir				; load dma
@@ -509,6 +515,7 @@ DMACFG_V:
 ;==================================================================================================
 ;
 DMABUF	.TEXT	"0123456789abcdef"
+;DMABUF	.DB	$04,$00,$04,$00,$04,$00,$04,$00,$04,$00,$04,$00,$04,$00,$04,$00,$00,$00,$00 ; SPEAKER
 ;
 DMA_ReadyO:
 	call	PRTSTRD
@@ -631,9 +638,9 @@ DMAMemMove1:
 ;
 DMAMemMove2:
 ;
-;	LD	HL,$8400	; PLANT
-;	LD	A,$00		; BAD
-;	LD	(HL),A		; SEED
+	;LD	HL,$8400	; PLANT
+	;LD	A,$00		; BAD
+	;LD	(HL),A		; SEED
 ;
 	LD	A,$AA		; CHECK COPY SUCCESSFULL
 	LD	HL,$8000
@@ -641,6 +648,14 @@ DMAMemMove2:
 NXTCMP:	CPI
 	JP	PO,CMPOK
 	JR	Z,NXTCMP
+
+	DEC	HL
+	CALL	PRTHEXWORDHL
+	LD	A,' '
+	CALL	COUT
+	LD	A,(HL)
+	CALL	PRTHEXBYTE
+	
 	RET			; RET W/ ZF CLEAR
 ;
 CMPOK:
@@ -1193,7 +1208,6 @@ CST:
 	RET
 ;
 USEINT	.DB	FALSE		; USE INTERRUPTS FLAG
-counter	.dw	0	
 dmaport	.db	DMABASE
 dmalach	.db	DMALATCH
 dmaxfer	.db	DMA_XMODE
@@ -1214,11 +1228,16 @@ reladr	.equ	$		; relocation start adr
 	.org	$A000		; code will run here
 ;
 int:
+	;LD	E,'.'			; OUTPUT CHAR TO E
+	;LD	C,CIO_CONSOLE		; CONSOLE UNIT TO C
+	;LD	B,BF_CIOOUT		; HBIOS FUNC: OUTPUT CHAR
+	;CALL	$FFF0			; HBIOS OUTPUTS CHARACTER
+
 	; According to the DMA doc, you must issue
 	; a DMA_DISABLE command prior to a
 	; DMA_REINIT_STATUS_BYTE command to avoid a
 	; potential race condition.
-	ld	a,(dmaport)
+	ld	a,(int_dmaport)
 	ld	c,a
 	ld	a,DMA_DISABLE
 	out	(c),a
@@ -1237,6 +1256,11 @@ int:
 ;
 	or	$ff		; signal int handled
 	ret
+;
+; data referred to in handler must reside in high mem
+;
+int_dmaport	.db	0	; hi mem copy of dmaport
+counter		.dw	0	; interrupt counter
 ;
 hsiz	.equ	$ - $A000	; size of handler to relocate
 ;

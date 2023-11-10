@@ -1,3 +1,8 @@
+Version 3.4
+-----------
+NOTE: Changes require HBIOS/CBIOS/Apps sync, version bump to 3.4 to ensure integrity
+- WBW: Device type number moved from upper nibble to full byte
+
 Version 3.3
 -----------
 - WBW: Support Front Panel switches
@@ -19,6 +24,10 @@ Version 3.3
 - WBW: Early support for Duodyne base system (CPU/UART/ROM/RAM/RTC/SPK)
 - M?C: Fixed XM to allow specifying HBIOS port for send operations
 - WBW: Fix S100 Z180 LED operation (credit to Jay Cotton for finding this issue)
+- WBW: QPM system image is now combined with current CBIOS during build
+- WBW: Added framework for Heath platform
+- WBW: Support for USB Disks via CH375/CH376
+- D?J: Support for Raspberry Pi build process
 
 Version 3.2.1
 -------------
