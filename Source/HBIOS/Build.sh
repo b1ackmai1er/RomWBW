@@ -6,6 +6,7 @@ set -e
 export ROM_PLATFORM
 export ROM_CONFIG
 export ROMSIZE
+export RAMSIZE
 export CPUFAM
 
 if [ "${ROM_PLATFORM}" == "dist" ] ; then
@@ -30,6 +31,7 @@ if [ "${ROM_PLATFORM}" == "dist" ] ; then
 	ROM_PLATFORM="RCZ80"; ROM_CONFIG="skz"; bash Build.sh
 	ROM_PLATFORM="RCZ80"; ROM_CONFIG="zrc"; bash Build.sh
 	ROM_PLATFORM="RCZ80"; ROM_CONFIG="zrc_ram"; bash Build.sh
+	ROM_PLATFORM="RCZ80"; ROM_CONFIG="zrc512"; bash Build.sh
 	ROM_PLATFORM="RPH"; ROM_CONFIG="std"; bash Build.sh
 	ROM_PLATFORM="SBC"; ROM_CONFIG="std"; bash Build.sh
 	ROM_PLATFORM="SBC"; ROM_CONFIG="simh"; bash Build.sh
@@ -47,6 +49,8 @@ if [ "${ROM_PLATFORM}" == "dist" ] ; then
 	ROM_PLATFORM="ZETA"; ROM_CONFIG="std"; bash Build.sh
 	ROM_PLATFORM="ZETA2"; ROM_CONFIG="std"; bash Build.sh
 	ROM_PLATFORM="HEATH"; ROM_CONFIG="std"; bash Build.sh
+	ROM_PLATFORM="EPITX"; ROM_CONFIG="std"; bash Build.sh
+#	ROM_PLATFORM="MON"; ROM_CONFIG="std"; bash Build.sh
 	exit
 fi
 
@@ -111,4 +115,4 @@ fi
 
 #echo OBJECTS=${OBJECTS}
 
-make ROM_PLATFORM=${ROM_PLATFORM} ROM_CONFIG=${ROM_CONFIG} ROMSIZE=${ROMSIZE}
+make ROM_PLATFORM=${ROM_PLATFORM} ROM_CONFIG=${ROM_CONFIG} ROMSIZE=${ROMSIZE} RAMSIZE=${RAMSIZE}
