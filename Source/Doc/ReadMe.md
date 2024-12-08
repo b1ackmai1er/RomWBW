@@ -114,7 +114,6 @@ Documentation for $doc_product$ includes:
 * $doc_user$
 * $doc_sys$
 * $doc_apps$
-* $doc_romapps$
 * $doc_errata$
 
 # Acknowledgments
@@ -177,8 +176,8 @@ please let me know if I missed you!
 
 * Tasty Basic is a product of Dimitri Theulings.
 
-* Dean Netherton contributed the sound driver interface and
-  the SN76489 sound driver.
+* Dean Netherton contributed eZ80 CPU support, the sound driver
+  interface, and the SN76489 sound driver.
 
 * The RomWBW Disk Catalog document was produced by Mykl Orders.
 
@@ -188,7 +187,12 @@ please let me know if I missed you!
   compendium.
 
 * Martin R has provided substantial help reviewing and improving the
-  User Guide.
+  User Guide and Applications documents.
+  
+* Mark Pruden has also contributed a great deal of content to the
+  Disk Catalog, User Guide as well as contributing the disk image
+  for the Z3PLUS operating system, the COPYSL utility, and also
+  implemented feature for RomWBW configuration by NVRAM.
 
 * Jacques Pelletier has contributed the DS1501 RTC driver code.
 
@@ -213,6 +217,14 @@ please let me know if I missed you!
 
 * Bill Shen has contributed boot loaders for several of his
   systems.
+
+* Laszlo Szolnoki has contributed an EF9345 video display
+  controller driver.
+
+* Ladislau Szilagyi has contributed an enhanced version of
+  CP/M Cowgol that leverages RomWBW memory banking.
+
+* Les Bird has contributed support for the NABU w/ Option Board
 
 Contributions of all kinds to RomWBW are very welcome.
 

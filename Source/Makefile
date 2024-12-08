@@ -2,12 +2,12 @@
 # order is actually important, because of build dependencies
 #
 
-.PHONY: doc prop shared bp images rom zrc z1rcc zzrcc zrc512
+.PHONY: doc prop shared bp images rom zrc z1rcc zzrcc zrc512 fz80
 
 .ONESHELL:
-.SHELLFLAGS = -cex
+.SHELLFLAGS = -ce
 
-all: prop shared bp images rom zrc z1rcc zzrcc zrc512
+all: prop shared bp images rom zrc z1rcc zzrcc zrc512 fz80
 
 doc:
 	$(MAKE) --directory Doc $(ACTION)
@@ -25,6 +25,7 @@ shared:
 	$(MAKE) --directory ZSDOS $(ACTION)
 	$(MAKE) --directory CPM3 $(ACTION)
 	$(MAKE) --directory ZPM3 $(ACTION)
+	$(MAKE) --directory CPNET $(ACTION)
 	$(MAKE) --directory pSys $(ACTION)
 	$(MAKE) --directory Apps $(ACTION)
 	$(MAKE) --directory Forth $(ACTION)
@@ -39,7 +40,7 @@ images:
 	$(MAKE) --directory Images $(ACTION)
 
 rom:
-	$(MAKE) --directory HBIOS $(ACTION)
+	@$(MAKE) --directory HBIOS $(ACTION)
 
 zrc:
 	$(MAKE) --directory ZRC $(ACTION)
@@ -52,6 +53,9 @@ zzrcc:
 
 zrc512:
 	$(MAKE) --directory ZRC512 $(ACTION)
+
+fz80:
+	$(MAKE) --directory FZ80 $(ACTION)
 
 clean: ACTION=clean
 clean: all

@@ -5,11 +5,12 @@ DIST_OBJECTS := \
 	RCZ80_zrc_ram RCZ80_zrc512 RPH_std SBC_std SBC_simh MBC_std \
 	DUO_std SCZ180_sc126 SCZ180_sc130 SCZ180_sc131 SCZ180_sc140 \
 	SCZ180_sc503 SCZ180_sc700 S100_std UNA_std Z80RETRO_std \
-	ZETA_std ZETA2_std HEATH_std EPITX_std
-#	RCZ80_mt RCZ80_duart MON_std 
+	ZETA_std ZETA2_std HEATH_std EPITX_std GMZ180_std
+#	RCZ80_mt RCZ80_duart MON_std
 
 OBJECTS := $(DIST_OBJECTS)
-OBJECTS := SBC_std MK4_std UNA_std S100_std
+# OBJECTS := SBC_std MK4_std UNA_std S100_std
+
 OBJECTS := $(OBJECTS:=.rom) $(OBJECTS:=.com) $(OBJECTS:=.upd)
 OBJECTS := $(filter-out UNA_%.com UNA_%.upd,$(OBJECTS))
 
@@ -99,8 +100,12 @@ UNA_%.osimg.bin: UNA_%.romldr.bin UNA_%.dbgmon.bin
 %.osimg_small.bin: %.romldr.bin %.dbgmon.bin
 	cat $(*F).romldr.bin $(*F).dbgmon.bin ../ZSDOS/zsys_wbw.bin >$@
 
-%.osimg1.bin: camel80.bin %.nascom.bin tastybasic.bin %.game.bin %.eastaegg.bin netboot.mod %.updater.bin %.usrrom.bin
-	cat camel80.bin $(*F).nascom.bin tastybasic.bin $(*F).game.bin $(*F).eastaegg.bin netboot.mod $(*F).updater.bin $(*F).usrrom.bin >$@
+%.osimg1.bin: camel80.bin %.nascom.bin tastybasic.bin %.game.bin %.eastaegg.bin netboot.mod %.updater.bin sysconf.bin %.usrrom.bin
+	cat camel80.bin $(*F).nascom.bin tastybasic.bin $(*F).game.bin $(*F).eastaegg.bin netboot.mod $(*F).updater.bin sysconf.bin $(*F).usrrom.bin >$@
+	srec_cat $@ -Binary -Crop 0 0x7FFF -Checksum_Negative_Big_Endian 0x7FFF 1 1 -o $@ -Binary
+
+S100_%.imgpad2.bin: s100mon.bin
+	cp $< $@
 	srec_cat $@ -Binary -Crop 0 0x7FFF -Checksum_Negative_Big_Endian 0x7FFF 1 1 -o $@ -Binary
 
 %.imgpad2.bin: imgpad2.asm %.build.inc
@@ -109,19 +114,15 @@ UNA_%.osimg.bin: UNA_%.romldr.bin UNA_%.dbgmon.bin
 	srec_cat $@ -Binary -Crop 0 0x7FFF -Checksum_Negative_Big_Endian 0x7FFF 1 1 -o $@ -Binary
 	rm build.inc
 
-S100_%.imgpad2.bin: s100mon.bin
-	cp $< $@
-	srec_cat $@ -Binary -Crop 0 0x7FFF -Checksum_Negative_Big_Endian 0x7FFF 1 1 -o $@ -Binary
-
 UNA_%.rom: UNA_%.osimg.bin UNA_%.hbios_env.sh
 	. ./UNA_$(*F).hbios_env.sh ; \
-	cat ../UBIOS/UNA-BIOS.BIN UNA_$(*F).osimg.bin ../UBIOS/FSFAT.BIN ../RomDsk/rom$${ROMSIZE}_una.dat >$@ ; \
+	cat ../UBIOS/UNA-BIOS.BIN UNA_$(*F).osimg.bin ../UBIOS/FSFAT.BIN ../RomDsk/rom$${ROMDISKSIZE}_una.dat >$@ ; \
 	cp UNA_$(*F).osimg.bin $(DEST)/UNA_WBW_SYS.bin ; \
-	cp ../RomDsk/rom$${ROMSIZE}_una.dat $(DEST)/UNA_WBW_ROM$${ROMSIZE}.bin
+	cp ../RomDsk/rom$${ROMDISKSIZE}_una.dat $(DEST)/UNA_WBW_ROM$${ROMDISKSIZE}.bin
 
 %.rom: %.hbios_rom.bin %.osimg.bin %.osimg1.bin %.imgpad2.bin %.hbios_env.sh
 	. ./$(*F).hbios_env.sh ; \
-	if [ $$ROMSIZE -gt 0 ] ; then RD="rom$$ROMSIZE" ; else RD="ram$$RAMSIZE" ; fi ; \
+	if [ $$ROMSIZE -gt 0 ] ; then RD="rom$$ROMDISKSIZE" ; else RD="rom$$RAMDISKSIZE" ; fi ; \
 	cat $(*F).hbios_rom.bin $(*F).osimg.bin $(*F).osimg1.bin $(*F).imgpad2.bin ../RomDsk/$${RD}_wbw.dat >$@
 
 %.com: %.hbios_app.bin %.osimg_small.bin

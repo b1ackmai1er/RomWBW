@@ -16,6 +16,24 @@
 ;
 ;
 ;======================================================================
+; TERMINAL DRIVER - PRE-CONSOLE INITIALIZATION
+;======================================================================
+;
+; GIVE EMULATION MODULES A CHANCE TO RESET THEMSELVES AT STARTUP
+;
+TERM_PREINIT:
+#IF (TERMENABLE)
+	XOR	A			; ZERO TO ACCUM
+	LD	(TERM_DEVCNT),A		; INITIALIZE DEVCNT
+	CALL	TTY_PREINIT		; DO TTY PREINIT
+	CALL	ANSI_PREINIT		; DO ANSI PREINIT
+#ENDIF
+	XOR	A			; SIGNAL SUCCESS
+	RET				; DONE
+;
+#IF (TERMENABLE)
+;
+;======================================================================
 ; TERMINAL DRIVER - ATTACH
 ;======================================================================
 ;
@@ -37,15 +55,18 @@ TERM_ATTACH:
 	LD	B,A			; PUT IT IN B
 	PUSH	HL			; SAVE VDA INSTANCE DATA PTR
 ;
+	LD	A,C			; VIDEO UNIT TO A
+	LD	(TERM_VDADEV),A		; SAVE IT
+;
 	; SETUP EMULATOR MODULE FUNC TBL ADDRESS BASED ON DESIRED EMULATION
 	; EMULATOR PASSES BACK IT'S FUNC TBL ADDRESS IN DE
 	OR	$FF			; PRESET FAILURE
-#IF (VDAEMU == EMUTYP_TTY)
+  #IF (VDAEMU == EMUTYP_TTY)
 	CALL	TTY_INIT		; INIT TTY, DE := TTY_FNTBL
-#ENDIF
-#IF (VDAEMU == EMUTYP_ANSI)
+  #ENDIF
+  #IF (VDAEMU == EMUTYP_ANSI)
 	CALL	ANSI_INIT		; INIT ANSI, DE := ANSI_FNTBL
-#ENDIF
+  #ENDIF
 	POP	HL			; RECOVER VDA INSTANCE DATA  PTR
 	RET	NZ			; BAIL OUT ON ERROR
 ;
@@ -55,7 +76,8 @@ TERM_ATTACH:
 	PUSH	HL			; COPY VDA INSTANCE DATA PTR
 	POP	DE			; ... TO DE
 	CALL	CIO_ADDENT		; ADD ENTRY, A := UNIT ASSIGNED
-	LD	(HCB + HCB_CRTDEV),A	; SET OURSELVES AS THE CRT DEVICE
+	;;;LD	(HCB + HCB_CRTDEV),A	; SET OURSELVES AS THE CRT DEVICE
+	CALL	CIO_SETCRT		; SET OURSELVES AS THE CRT DEVICE
 ;
 	; INCREMENT DEVICE COUNT
 	LD	HL,TERM_DEVCNT		; POINT TO DEVICE COUNT
@@ -65,14 +87,46 @@ TERM_ATTACH:
 	RET				; RETURN
 ;
 ;======================================================================
+; TERMINAL DRIVER - RESET
+;======================================================================
+;
+; RESET THE FULL EMULATION STACK INCLUDING THE UNDERLYING VDA.
+; THIS IS USED TO RECOVER FROM APPLICATIONS THAT REPROGRAM THE
+; VIDEO CHIP.
+;
+TERM_RESET:
+	; ABORT IF NOTHING ATTACHED
+	LD	A,(TERM_DEVCNT)
+	OR	A
+	JR	NZ,TERM_RESET1
+	OR	$FF
+	RET
+;
+TERM_RESET1:
+	; RESET THE ATTACHED VDA DEVICE
+	LD	B,BF_VDARES		; FUNC: RESET
+	LD	A,(TERM_VDADEV)		; GET VDA UNIT NUM
+	LD	C,A			; PUT IN C
+	JP	ANSI_VDADISP		; CALL THE VDA DRIVER
+;
+;======================================================================
 ; TERMINAL DRIVER PRIVATE DATA
 ;======================================================================
 ;
 TERM_DEVCNT	.DB	0		; TERMINAL DEVICE COUNT
+TERM_VDADEV	.DB	0		; ATTACHED VDA UNIT
 ;
 ;======================================================================
 ; EMULATION MODULES
 ;======================================================================
 ;
-#INCLUDE "tty.asm"
-#INCLUDE "ansi.asm"
+  #INCLUDE "tty.asm"
+  #INCLUDE "ansi.asm"
+;
+#ELSE
+;
+TERM_RESET:
+	XOR	A
+	RET
+;
+#ENDIF
